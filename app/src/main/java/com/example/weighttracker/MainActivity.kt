@@ -26,6 +26,16 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private val importLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri: Uri? ->
+        if (uri != null) {
+            contentResolver.openInputStream(uri)?.use { input ->
+                viewModel.previewCsvImport(input.bufferedReader().readText())
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -35,6 +45,9 @@ class MainActivity : ComponentActivity() {
                 onExportCsv = {
                     pendingCsv = viewModel.csv()
                     exportLauncher.launch("weight-tracker.csv")
+                },
+                onImportCsv = {
+                    importLauncher.launch(arrayOf("text/*", "text/csv", "application/csv", "application/vnd.ms-excel"))
                 },
             )
         }
