@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.weighttracker"
+    namespace = "com.aditya.weighttracker"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.example.weighttracker"
+        applicationId = "com.aditya.weighttracker"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
@@ -43,6 +43,10 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.google.play.services.auth)
+    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
