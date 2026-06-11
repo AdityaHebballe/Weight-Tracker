@@ -3,9 +3,7 @@ package com.aditya.weighttracker.backup
 import android.content.Context
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
@@ -33,20 +31,8 @@ class DriveBackupScheduler(context: Context) {
         )
     }
 
-    fun backupNow() {
-        val request = OneTimeWorkRequestBuilder<DriveBackupWorker>()
-            .setConstraints(networkConstraints())
-            .build()
-        workManager.enqueueUniqueWork(
-            UNIQUE_ONE_TIME_BACKUP,
-            ExistingWorkPolicy.REPLACE,
-            request,
-        )
-    }
-
     fun cancel() {
         workManager.cancelUniqueWork(UNIQUE_PERIODIC_BACKUP)
-        workManager.cancelUniqueWork(UNIQUE_ONE_TIME_BACKUP)
     }
 
     private fun networkConstraints(): Constraints =
@@ -56,6 +42,5 @@ class DriveBackupScheduler(context: Context) {
 
     companion object {
         private const val UNIQUE_PERIODIC_BACKUP = "drive-backup-periodic"
-        private const val UNIQUE_ONE_TIME_BACKUP = "drive-backup-now"
     }
 }

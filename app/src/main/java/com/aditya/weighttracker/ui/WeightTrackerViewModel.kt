@@ -300,6 +300,10 @@ class WeightTrackerViewModel(application: Application) : AndroidViewModel(applic
         message.value = null
     }
 
+    fun showMessage(value: String) {
+        message.value = value
+    }
+
     private suspend fun handleDriveAuthorizationState(
         state: DriveAuthorizationState,
         onNeedsResolution: (PendingIntent) -> Unit,

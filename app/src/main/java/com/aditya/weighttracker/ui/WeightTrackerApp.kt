@@ -121,6 +121,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -311,6 +312,7 @@ private fun WeightTrackerScreen(
     val scope = rememberCoroutineScope()
     var showSheet by remember { mutableStateOf(false) }
     var editingEntry by remember { mutableStateOf<WeightEntry?>(null) }
+    val locale = LocalLocale.current.platformLocale
     val weightDeltasById = remember(uiState.entries) {
         uiState.entries.mapIndexedNotNull { index, entry ->
             val previous = uiState.entries.getOrNull(index + 1) ?: return@mapIndexedNotNull null
@@ -375,7 +377,7 @@ private fun WeightTrackerScreen(
                 LogGrouping.groupByMonth(uiState.entries).forEach { group ->
                     item(key = group.month.toString()) {
                         MonthHeader(
-                            label = group.month.month.getDisplayName(TextStyle.FULL, Locale.getDefault()) +
+                            label = group.month.month.getDisplayName(TextStyle.FULL, locale) +
                                 " ${group.month.year}",
                             count = group.entries.size,
                         )
@@ -1325,6 +1327,7 @@ private fun OnboardingPreviewPage(
         ?.let { UnitConverter.weightToKg(it, unitSystem) }
     val previewWaistCm = waistText.takeIf { it.isNotBlank() }?.toDoubleOrNull()
         ?.let { UnitConverter.lengthToCm(it, unitSystem) }
+    val locale = LocalLocale.current.platformLocale
     Column(verticalArrangement = Arrangement.spacedBy(22.dp)) {
         OnboardingPageHeader(
             title = "You are set",
@@ -1450,6 +1453,7 @@ private fun OnboardingSwipeDemoPage(
         ?: UnitConverter.weightToKg(78.2, unitSystem)
     val previewWaistCm = waistText.takeIf { it.isNotBlank() }?.toDoubleOrNull()
         ?.let { UnitConverter.lengthToCm(it, unitSystem) }
+    val locale = LocalLocale.current.platformLocale
     var shifted by remember { mutableStateOf(false) }
     val offset by animateDpAsState(
         targetValue = if (shifted) (-52).dp else 0.dp,
@@ -1507,10 +1511,11 @@ private fun OnboardingSwipeDemoPage(
                                 createdAtMillis = 0,
                                 updatedAtMillis = 0,
                             ),
+                            locale = locale,
                         )
                         Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                             Text(
-                                text = formatRelativeLogDate(selectedDate),
+                                text = formatRelativeLogDate(selectedDate, locale),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.ExtraBold,
                             )
@@ -2301,8 +2306,9 @@ private fun EntryRow(
         animationSpec = spring(dampingRatio = 0.82f, stiffness = 130f),
         label = "entryHighlight",
     )
-    val dateLabel = formatRelativeLogDate(entry.date)
-    val fullDate = entry.date.format(DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.getDefault()))
+    val locale = LocalLocale.current.platformLocale
+    val dateLabel = formatRelativeLogDate(entry.date, locale)
+    val fullDate = entry.date.format(DateTimeFormatter.ofPattern("MMM d, yyyy", locale))
 
     val dismissState = rememberSwipeToDismissBoxState()
     val scope = rememberCoroutineScope()
@@ -2355,7 +2361,7 @@ private fun EntryRow(
                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    TimelineDateBadge(entry = entry)
+                    TimelineDateBadge(entry = entry, locale = locale)
                     Column(
                         modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -2446,7 +2452,7 @@ private fun EntryRow(
 }
 
 @Composable
-private fun TimelineDateBadge(entry: WeightEntry) {
+private fun TimelineDateBadge(entry: WeightEntry, locale: Locale) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -2474,7 +2480,7 @@ private fun TimelineDateBadge(entry: WeightEntry) {
                     color = MaterialTheme.colorScheme.onTertiaryContainer,
                 )
                 Text(
-                    text = entry.date.month.getDisplayName(TextStyle.SHORT, Locale.getDefault()).uppercase(Locale.getDefault()),
+                    text = entry.date.month.getDisplayName(TextStyle.SHORT, locale).uppercase(locale),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.78f),
@@ -2930,12 +2936,12 @@ private fun formatWeight(weightKg: Double, unitSystem: UnitSystem): String =
 private fun formatLength(lengthCm: Double, unitSystem: UnitSystem): String =
     "${formatOneDecimal(UnitConverter.lengthFromCm(lengthCm, unitSystem))} ${unitSystem.lengthLabel}"
 
-private fun formatRelativeLogDate(date: LocalDate): String {
+private fun formatRelativeLogDate(date: LocalDate, locale: Locale): String {
     val today = LocalDate.now()
     return when (date) {
         today -> "Today"
         today.minusDays(1) -> "Yesterday"
-        else -> date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())
+        else -> date.dayOfWeek.getDisplayName(TextStyle.SHORT, locale)
     }
 }
 

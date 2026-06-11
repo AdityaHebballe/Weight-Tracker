@@ -21,8 +21,14 @@ class MainActivity : ComponentActivity() {
         val csv = pendingCsv
         pendingCsv = null
         if (uri != null && csv != null) {
-            contentResolver.openOutputStream(uri)?.use { output ->
-                output.write(csv.toByteArray(Charsets.UTF_8))
+            runCatching {
+                contentResolver.openOutputStream(uri)?.use { output ->
+                    output.write(csv.toByteArray(Charsets.UTF_8))
+                } ?: error("Could not open export file.")
+            }.onSuccess {
+                viewModel.showMessage("CSV exported")
+            }.onFailure {
+                viewModel.showMessage("Export failed: ${it.message ?: "Could not write CSV"}")
             }
         }
     }
@@ -31,8 +37,12 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.OpenDocument(),
     ) { uri: Uri? ->
         if (uri != null) {
-            contentResolver.openInputStream(uri)?.use { input ->
-                viewModel.previewCsvImport(input.bufferedReader().readText())
+            runCatching {
+                contentResolver.openInputStream(uri)?.use { input ->
+                    viewModel.previewCsvImport(input.bufferedReader().readText())
+                } ?: error("Could not open import file.")
+            }.onFailure {
+                viewModel.showMessage("Import failed: ${it.message ?: "Could not read CSV"}")
             }
         }
     }
